@@ -102,7 +102,7 @@ def _invoke_claude(model: str, system_prompt: str, user_prompt: str) -> str:
 
 # --- Main Dispatcher Logic ---
 
-def invoke_agent(agent_name: str, user_prompt: str, system_prompt: str = None) -> str:
+def invoke_agent(agent_name: str, user_prompt: str, system_prompt: str = None, call_history: list = None) -> str:
     """
     Invokes the specified agent by calling the configured LLM provider.
 
@@ -111,6 +111,7 @@ def invoke_agent(agent_name: str, user_prompt: str, system_prompt: str = None) -
         user_prompt: The user's prompt or the message to send to the agent.
         system_prompt: The system prompt (instructions) for the agent. If None,
                        it's loaded from the agent's configured prompt_file.
+        call_history: An optional list to which the agent call details will be appended.
 
     Returns:
         A string containing the response from the LLM.
@@ -127,6 +128,14 @@ def invoke_agent(agent_name: str, user_prompt: str, system_prompt: str = None) -
 
     provider = agent_info.get('provider')
     model = agent_info.get('model')
+
+    # Record the call if a history list is provided
+    if call_history is not None:
+        call_history.append({
+            "name": agent_name,
+            "provider": provider,
+            "model": model
+        })
 
     # Load system prompt from file if not provided
     if system_prompt is None:

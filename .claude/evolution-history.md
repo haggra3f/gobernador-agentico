@@ -2,6 +2,9 @@
 
 Esta es la historia completa de evoluciones del sistema de directivas.
 
+### Version 2.2 (2025-10-22)
+- **Refactor (Agent Coordination):** Evolved the delegation protocol to an orchestrator-centric model. The primary agent no longer performs routing; it delegates all actionable requests to the `orchestrator` for analysis and dispatch. This enhances scalability and robustness.
+
 ## Version 1.7 (2025-10-21)
 - Created orchestrator agent (.claude/agents/orchestrator.md) with complete agent coordination logic
 - Extracted ~200+ lines of agent routing protocols from CLAUDE.md to orchestrator.md

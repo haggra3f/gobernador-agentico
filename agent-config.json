@@ -23,6 +23,54 @@
       "provider": "gemini",
       "model": "gemini-1.5-pro",
       "prompt_file": ".claude/CLAUDE.md"
+    },
+    {
+      "name": "agent-architect",
+      "provider": "gemini",
+      "model": "gemini-1.5-flash",
+      "prompt_file": ".claude/agents/agent-architect.md"
+    },
+    {
+      "name": "dev-coordinator",
+      "provider": "gemini",
+      "model": "gemini-1.5-flash",
+      "prompt_file": ".claude/agents/dev-coordinator.md"
+    },
+    {
+      "name": "error-documenter",
+      "provider": "gemini",
+      "model": "gemini-1.5-flash",
+      "prompt_file": ".claude/agents/error-documenter.md"
+    },
+    {
+      "name": "execution-tracker",
+      "provider": "gemini",
+      "model": "gemini-1.5-flash",
+      "prompt_file": ".claude/agents/execution-tracker.md"
+    },
+    {
+      "name": "github-manager",
+      "provider": "gemini",
+      "model": "gemini-1.5-flash",
+      "prompt_file": ".claude/agents/github-manager.md"
+    },
+    {
+      "name": "gmail-manager",
+      "provider": "gemini",
+      "model": "gemini-1.5-flash",
+      "prompt_file": ".claude/agents/gmail-manager.md"
+    },
+    {
+      "name": "ideas",
+      "provider": "gemini",
+      "model": "gemini-1.5-flash",
+      "prompt_file": ".claude/agents/ideas.md"
+    },
+    {
+      "name": "gemini-adapter-agent",
+      "provider": "gemini",
+      "model": "gemini-1.5-pro",
+      "prompt_file": ".claude/agents/gemini-adapter-agent.md"
     }
   ]
 }

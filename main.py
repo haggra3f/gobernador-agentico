@@ -1,21 +1,29 @@
 # -*- coding: utf-8 -*-
 """
 Main execution loop for the Gobernador Agentico project.
-
-This script serves as the primary entry point for interacting with the multi-model
-agentic system. It orchestrates the overall workflow:
-
-1.  Initializes a chat session with a primary "coordinator" agent.
-2.  Accepts user input in a continuous loop.
-3.  Sends the user's request to the coordinator agent via the model_dispatcher.
-4.  Parses the coordinator's response to detect delegation commands.
-5.  If a delegation command (e.g., `[DELEGATE: agent_name]`) is found, it
-    invokes the specified sub-agent with the provided context.
-6.  Prints the final response to the user.
 """
 import sys
 import re
+import os
 from src.model_dispatcher import invoke_agent
+
+def check_initial_setup():
+    """
+    Acts on behalf of the Orchestrator to check for essential configurations.
+    If the .env file is missing, it invokes the Setup Assistant's guidance.
+    """
+    if not os.path.exists('.env'):
+        print("\033[93m" + "="*60 + "\033[0m")
+        print("\033[93m" + "  [Orquestador] -> Invocando al Asistente de Configuración" + "\033[0m")
+        print("\033[93m" + "="*60 + "\033[0m")
+        print("\n¡Bienvenido! Parece que es tu primera vez ejecutando este proyecto.")
+        print("El archivo de configuración '.env' no ha sido encontrado.\n")
+        print("Por favor, ejecuta el script de configuración para empezar:")
+        print("\n    \033[1mpython scripts/setup.py\033[0m\n")
+        print("El asistente te guiará para crear el entorno, instalar dependencias")
+        print("y generar el archivo '.env' que necesitas llenar con tus API keys.")
+        print("\033[93m" + "="*60 + "\033[0m")
+        sys.exit(0) # Exit gracefully without an error.
 
 def parse_delegation(response: str):
     """
@@ -23,9 +31,8 @@ def parse_delegation(response: str):
     A delegation command is expected in the format:
     [DELEGATE: agent_name, PROMPT: "The prompt for the agent..."]
     """
-    # A more robust regex to handle multi-line, complex prompts, and agent names with hyphens.
     match = re.search(
-        r'\[DE-?LEGATE:\s*([\w-]+),\s*PROMPT:\s*"(.*?)"\]',
+        r'\\[DE-?LEGATE:\s*([\w-]+),\s*PROMPT:\s*"(.*?)\"\\]',
         response,
         re.DOTALL | re.IGNORECASE
     )
@@ -39,12 +46,13 @@ def main():
     """
     Main chat loop.
     """
+    # The Orchestrator's first action is to check the setup.
+    check_initial_setup()
+
     print("--- Gobernador Agentico ---")
     print("Sistema de agentes multi-modelo iniciado. Escribe 'salir' para terminar.")
     print("="*30)
 
-    # The 'default_coordinator' is the main agent that interprets user requests.
-    # Its personality and rules are defined in .claude/CLAUDE.md.
     coordinator_agent_name = "default_coordinator"
 
     while True:
@@ -57,29 +65,37 @@ def main():
             if not user_input:
                 continue
 
-            # 1. Invoke the main coordinator agent
-            print(f"\n[Gobernador] -> Invocando al coordinador ('{coordinator_agent_name}')...")
-            coordinator_response = invoke_agent(coordinator_agent_name, user_input)
+            agent_call_log = []
 
-            # 2. Check for delegation
+            print(f"\n[Gobernador] -> Invocando al coordinador ('{coordinator_agent_name}')...")
+            coordinator_response = invoke_agent(
+                coordinator_agent_name,
+                user_input,
+                call_history=agent_call_log
+            )
+
             agent_to_delegate, prompt_for_agent = parse_delegation(coordinator_response)
 
             final_response = ""
             if agent_to_delegate:
                 print(f"[Gobernador] -> Delegando tarea al agente '{agent_to_delegate}'...")
-                # 3. If delegation is detected, invoke the specified agent
                 try:
-                    final_response = invoke_agent(agent_to_delegate, prompt_for_agent)
+                    final_response = invoke_agent(
+                        agent_to_delegate,
+                        prompt_for_agent,
+                        call_history=agent_call_log
+                    )
                 except Exception as e:
                     final_response = f"❌ Error al invocar al agente '{agent_to_delegate}': {e}"
             else:
-                # If no delegation, the coordinator's response is the final one
                 final_response = coordinator_response
 
-            # 4. Print the final response
+            if agent_call_log:
+                route_summary = " -> ".join([call['name'] for call in agent_call_log])
+                print(f"\n[Ruta de Agentes: {route_summary}]")
+
             print(f"\nRespuesta:\n{final_response}")
             print("="*30)
-
 
         except (ValueError, NotImplementedError, RuntimeError) as e:
             print(f"\n❌ Ocurrió un error en el flujo principal: {e}", file=sys.stderr)
@@ -88,7 +104,6 @@ def main():
             break
         except Exception as e:
             print(f"\n❌ Ocurrió un error inesperado: {e}", file=sys.stderr)
-
 
 if __name__ == "__main__":
     main()
