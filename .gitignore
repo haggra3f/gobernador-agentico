@@ -1,0 +1,54 @@
+# ============================================
+# User Data Protection
+# ============================================
+
+# Private configuration with credentials
+user-data/secrets.env
+user-data/.env
+
+# But DO track the directory structure
+!user-data/.gitkeep
+!user-data/inventory/.gitkeep
+!user-data/ideas/.gitkeep
+!user-data/knowledge/.gitkeep
+
+# ============================================
+# OS and IDE files
+# ============================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Linux
+*~
+.directory
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+
+# ============================================
+# Temporary and Build Files
+# ============================================
+
+# Node modules (if any JS tooling)
+node_modules/
+
+# Python cache (if any Python scripts)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs
+*.log
+logs/
