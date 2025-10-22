@@ -1,0 +1,28 @@
+{
+  "agents": [
+    {
+      "name": "orchestrator",
+      "provider": "gemini",
+      "model": "gemini-1.5-flash",
+      "prompt_file": ".claude/agents/orchestrator.md"
+    },
+    {
+      "name": "desarrollador",
+      "provider": "claude",
+      "model": "claude-3-opus",
+      "prompt_file": ".claude/agents/desarrollador.md"
+    },
+    {
+      "name": "inventory-librarian",
+      "provider": "gemini",
+      "model": "gemini-1.5-flash",
+      "prompt_file": ".claude/agents/inventory-librarian.md"
+    },
+    {
+      "name": "default_coordinator",
+      "provider": "gemini",
+      "model": "gemini-1.5-pro",
+      "prompt_file": ".claude/CLAUDE.md"
+    }
+  ]
+}

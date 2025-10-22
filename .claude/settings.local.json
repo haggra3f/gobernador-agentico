@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//mnt/d/Proyectos/**)",
+      "Write(//mnt/d/Proyectos/**)",
+      "Edit(//mnt/d/Proyectos/**)",
+      "Read(//home/haggr/**)",
+      "Read(//mnt/c/Users/**)",
+      "Bash(:*::*)",
+      "Bash(python3:*)",
+      "WebSearch"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

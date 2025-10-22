@@ -467,134 +467,64 @@
         </guideline>
 
         <guideline category="agent_coordination" priority="critical">
-            <description>Intelligent routing and coordination of specialized agents</description>
+            <description>Intelligent routing and coordination of specialized agents via a physical dispatcher.</description>
 
-            <workflow_delegation>
-                <description>Complex development tasks follow structured workflow via specialized agent</description>
-                <rule>For complex development tasks requiring planning and approval, delegate to orchestrator</rule>
-                <rule>Orchestrator will route to appropriate agent (typically desarrollador for complex development)</rule>
-                <rule>The desarrollador agent contains full workflow: Plan → Approval → Execute → Report</rule>
-                <rule>See .claude/agents/orchestrator.md for complete micro-agent registry and routing logic</rule>
-            </workflow_delegation>
+            <delegation_protocol status="mandatory">
+                <name>Physical Delegation Protocol</name>
+                <description>Delegation is no longer a simulation. To invoke an agent, you MUST output a specific, machine-parseable command string. The main execution loop (`main.py`) will parse this command and call the appropriate agent via the `model_dispatcher`.</description>
+                
+                <command_format>
+                    <rule status="mandatory">The command MUST be on a single line and formatted exactly as: `[DELEGATE: agent_name, PROMPT: "prompt_for_the_agent"]`</rule>
+                    <rule status="mandatory">`agent_name` must match a name in `agent-config.json`.</rule>
+                    <rule status="mandatory">`prompt_for_the_agent` must be enclosed in double quotes.</rule>
+                </command_format>
 
-            <routing_strategy>
-                <rule status="mandatory">Identify task category first, then delegate to orchestrator for all non-trivial agent selection</rule>
-                <rule>CLAUDE.md handles strategy (high-level categories), orchestrator handles tactics (specific agent routing)</rule>
-                <rule>Only route directly for the most obvious, high-frequency patterns (3-4 max)</rule>
-                <rule>For everything else: delegate to orchestrator for authoritative agent selection</rule>
-            </routing_strategy>
+                <examples>
+                    <example scenario="User wants to refactor code">
+                        <user_input>Refactor the auth module to use the new library.</user_input>
+                        <your_output>[DELEGATE: desarrollador, PROMPT: "The user wants to refactor the auth module. Create a detailed plan for approval."]</your_output>
+                    </example>
+                    <example scenario="User wants to check inventory">
+                        <user_input>Se acabó la leche.</user_input>
+                        <your_output>[DELEGATE: inventory-librarian, PROMPT: "ACTION: ADD TO agotado PAYLOAD: leche"]</your_output>
+                    </example>
+                    <example scenario="User asks a general question (no delegation)">
+                        <user_input>What is the capital of France?</user_input>
+                        <your_output>The capital of France is Paris.</your_output>
+                    </example>
+                </examples>
+
+                <workflow>
+                    <step order="1">Analyze the user's request.</step>
+                    <step order="2">Determine if a specialized agent is required by consulting the task categories.</step>
+                    <step order="3" condition="delegation_required">
+                        <action>Formulate a clear, concise prompt for the target agent.</action>
+                    </step>
+                    <step order="4" condition="delegation_required">
+                        <action>Output ONLY the `[DELEGATE: ...]` command string and nothing else.</action>
+                    </step>
+                    <step order="5" condition="no_delegation_required">
+                        <action>Answer the user's request directly.</action>
+                    </step>
+                </workflow>
+            </delegation_protocol>
 
             <task_categories>
-                <description>High-level task classification for orchestrator delegation</description>
-                <category name="development">Complex code implementation, architecture, refactoring, system design</category>
-                <category name="inventory">Managing lists of items, tracking availability and depletion</category>
-                <category name="email">Gmail operations and communication management</category>
-                <category name="ideas">Knowledge capture, synthesis, concept management, ideation</category>
-                <category name="exploration">Codebase analysis, understanding code structure and behavior</category>
-                <category name="knowledge">Documentation, research, learning, information synthesis</category>
-                <note>For specific agent routing within categories, ALWAYS delegate to orchestrator</note>
+                <description>High-level task classification for delegation.</description>
+                <category name="desarrollador">Complex code implementation, architecture, refactoring, system design.</category>
+                <category name="inventory-librarian">Managing lists of items, tracking availability and depletion.</category>
+                <category name="gmail-manager">Gmail operations and communication management.</category>
+                <category name="ideas">Knowledge capture, synthesis, concept management, ideation.</category>
+                <category name="orchestrator">Use for complex routing decisions or when the correct agent is ambiguous.</category>
+                <note>The agent name you delegate to MUST exist in `agent-config.json`.</note>
             </task_categories>
 
-            <routing_patterns>
-                <direct_routing>
-                    <description>Only the most obvious, high-frequency patterns - everything else goes to orchestrator</description>
-                    <pattern trigger="Compré [item]">inventory-librarian</pattern>
-                    <pattern trigger="Se acabó [item]">inventory-librarian</pattern>
-                    <pattern trigger="Manda email">gmail-manager</pattern>
-                    <note>ALL other routing decisions delegated to orchestrator - no exceptions</note>
-                </direct_routing>
-
-                <complex_routing>
-                    <description>Delegate to orchestrator for ALL non-trivial routing decisions</description>
-                    <trigger>ANY task not matching the 3 direct routing patterns above</trigger>
-                    <trigger>Development tasks (code implementation, architecture, refactoring)</trigger>
-                    <trigger>Code exploration and analysis tasks</trigger>
-                    <trigger>Idea capture and knowledge management tasks</trigger>
-                    <trigger>Tasks requiring multiple agents or ambiguous routing</trigger>
-                    <trigger>Novel request patterns</trigger>
-                    <rule status="critical">CLAUDE.md does NOT make granular agent routing decisions</rule>
-                    <action>Invoke orchestrator agent for authoritative routing decision</action>
-                    <note>See .claude/agents/orchestrator.md for complete micro-agent registry and capability validation</note>
-                </complex_routing>
-            </routing_patterns>
-
-            <delegation_protocols>
-                <agent_approval_delegation status="critical">
-                    <rule>When agent requests approval, present question to user and re-invoke same agent with decision</rule>
-                    <rule>NEVER let approval request terminate agent's execution flow</rule>
-                    <rule>Maintain agent context and ownership throughout approval process</rule>
-                    <example>desarrollador asks "Shall I proceed?" → Present plan to user → Get yes/no → Re-invoke desarrollador with "User approved: yes. Continue execution."</example>
-                </agent_approval_delegation>
-
-                <critical_file_protection priority="critical">
-                    <rule status="mandatory">NEVER edit CLAUDE.md, .claude/agents/*.md, or plan.md directly</rule>
-                    <rule status="mandatory">ALWAYS delegate critical file modifications to desarrollador agent</rule>
-                    <rule status="mandatory">CLAUDE.md does NOT maintain agent lists or make granular routing decisions</rule>
-                    <rule status="mandatory">Orchestrator is the ONLY authoritative source for micro-agent registry and capabilities</rule>
-                    <reason>Direct edits bypass planning, impact analysis, and user approval - high risk of system corruption</reason>
-                </critical_file_protection>
-
-                <agent_encapsulation priority="critical">
-                    <name>Agent Encapsulation Policy</name>
-                    <description>Agents are black boxes - NEVER execute their internal operations from outside</description>
-
-                    <principles>
-                        <principle status="mandatory">Each agent owns its domain completely - main thread and other agents MUST NOT duplicate agent logic</principle>
-                        <principle status="mandatory">ALWAYS delegate to specialized agent rather than reimplementing its functionality</principle>
-                        <principle status="mandatory">Agent boundaries are architectural contracts - violating them creates system fragility</principle>
-                    </principles>
-
-                    <rules>
-                        <rule status="forbidden">NEVER manually update inventory files - ALWAYS invoke inventory-librarian</rule>
-                        <rule status="forbidden">NEVER run grep/glob for code exploration - ALWAYS invoke Explore agent</rule>
-                        <rule status="forbidden">NEVER manually edit knowledge-graph.md - ALWAYS invoke ideas agent</rule>
-                        <rule status="forbidden">NEVER directly call MCP Gmail tools - ALWAYS invoke gmail-manager</rule>
-                        <rule status="forbidden">NEVER manually edit orchestrator.md registry - ALWAYS delegate to desarrollador</rule>
-                    </rules>
-
-                    <benefits>
-                        <benefit>Consistency: All operations through single authoritative implementation</benefit>
-                        <benefit>Quality: Agent's specialized logic ensures correct execution</benefit>
-                        <benefit>Evolution: Changes to agent logic automatically benefit all callers</benefit>
-                        <benefit>Accountability: Clear ownership and execution tracking</benefit>
-                        <benefit>Maintainability: Single source of truth for each domain</benefit>
-                    </benefits>
-
-                    <anti_patterns>
-                        <pattern status="forbidden">Main thread reimplementing agent logic to "save time"</pattern>
-                        <pattern status="forbidden">Duplicating agent operations in multiple places</pattern>
-                        <pattern status="forbidden">Bypassing agents for "simple" operations in their domain</pattern>
-                        <pattern status="forbidden">Directly accessing agent's data files without invoking agent</pattern>
-                    </anti_patterns>
-
-                    <enforcement>
-                        <when>ANY operation that falls within agent's domain</when>
-                        <action>Stop and delegate to appropriate agent</action>
-                        <exception>NONE - encapsulation is absolute for system integrity</exception>
-                    </enforcement>
-                </agent_encapsulation>
-            </delegation_protocols>
-
-            <architectural_separation>
-                <description>Clear separation of responsibilities for massive scalability</description>
-                <claude_md_role>
-                    <responsibility>Strategic coordination at category level</responsibility>
-                    <responsibility>High-level task classification (development, inventory, email, ideas, exploration, knowledge)</responsibility>
-                    <responsibility>Delegation to orchestrator for granular routing decisions</responsibility>
-                    <does_not>Maintain lists of specific micro-agents</does_not>
-                    <does_not>Make granular agent selection decisions</does_not>
-                    <does_not>Track individual agent capabilities</does_not>
-                </claude_md_role>
-                <orchestrator_role>
-                    <responsibility>Tactical routing and agent selection</responsibility>
-                    <responsibility>Maintains AUTHORITATIVE registry of ALL micro-agents</responsibility>
-                    <responsibility>Capability validation: "Can I handle task X?"</responsibility>
-                    <responsibility>Gap tracking for missing capabilities</responsibility>
-                    <responsibility>Designed to scale to hundreds of micro-agents</responsibility>
-                </orchestrator_role>
-                <flow>CLAUDE.md categorizes → Orchestrator selects agent → Agent executes</flow>
-                <scalability>Adding 100 micro-agents requires ONLY updating orchestrator.md</scalability>
-            </architectural_separation>
+            <agent_encapsulation priority="critical">
+                <name>Agent Encapsulation Policy</name>
+                <description>Agents are black boxes invoked via the dispatcher. NEVER replicate their logic.</description>
+                <rule status="forbidden">NEVER manually update inventory files - ALWAYS delegate to `inventory-librarian`.</rule>
+                <rule status="forbidden">NEVER start a complex development task - ALWAYS delegate to `desarrollador`.</rule>
+            </agent_encapsulation>
         </guideline>
     </execution_guidelines>
 
