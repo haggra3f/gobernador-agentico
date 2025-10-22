@@ -23,11 +23,11 @@ def parse_delegation(response: str):
     A delegation command is expected in the format:
     [DELEGATE: agent_name, PROMPT: "The prompt for the agent..."]
     """
-    # A more robust regex to handle multi-line and complex prompts
+    # A more robust regex to handle multi-line, complex prompts, and agent names with hyphens.
     match = re.search(
-        r'\\[DELEGATE:\s*(\\w+),\s*PROMPT:\s*"(.*?)"\\]',
+        r'\[DE-?LEGATE:\s*([\w-]+),\s*PROMPT:\s*"(.*?)"\]',
         response,
-        re.DOTALL
+        re.DOTALL | re.IGNORECASE
     )
     if match:
         agent_name = match.group(1).strip()
