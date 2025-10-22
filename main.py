@@ -5,7 +5,7 @@ Main execution loop for the Gobernador Agentico project.
 import sys
 import re
 import os
-from src.model_dispatcher import invoke_agent
+# The 'invoke_agent' import is now deferred to prevent startup crashes.
 
 def check_initial_setup():
     """
@@ -48,6 +48,10 @@ def main():
     """
     # The Orchestrator's first action is to check the setup.
     check_initial_setup()
+
+    # Import agent dispatcher only after setup is confirmed to exist.
+    # This prevents a crash if the API key is missing on startup.
+    from src.model_dispatcher import invoke_agent
 
     print("--- Gobernador Agentico ---")
     print("Sistema de agentes multi-modelo iniciado. Escribe 'salir' para terminar.")
